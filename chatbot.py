@@ -7,6 +7,7 @@ from langchain.chains import RetrievalQA
 from dotenv import load_dotenv
 from os
 
+load_dotenv()
 # Get the key from environment variable
 api_key = os.getenv("OPENAI_API_KEY")
 
