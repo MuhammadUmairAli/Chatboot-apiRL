@@ -12,11 +12,6 @@ api_key = os.getenv("OPENAI_API_KEY")
 
 if not api_key:
     raise ValueError("OPENAI_API_KEY is not set in environment.")
-# Load .env file if using it
-load_dotenv()
-
-# Set API key manually (or rely on .env if set there)
-os.environ["OPENAI_API_KEY"] = "OPENAI_API_KEY"  # Replace with your real key
 
 # Load & split document
 # print("Starting to load document...")  # Debug
