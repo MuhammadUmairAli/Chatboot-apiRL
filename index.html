@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rubby Leather Shopping Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 800px;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #030303, #0e0c0c);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .chat-header h1 {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        .chat-header p {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message.user {
+            align-items: flex-end;
+        }
+
+        .message.bot {
+            align-items: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .message.bot .message-bubble {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+
+        .message-time {
+            font-size: 0.7em;
+            color: #999;
+            margin-top: 5px;
+            padding: 0 8px;
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        #queryInput {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s ease;
+            resize: none;
+            min-height: 40px;
+            max-height: 120px;
+            font-family: inherit;
+        }
+
+        #queryInput:focus {
+            border-color: #667eea;
+        }
+
+        #sendButton {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            min-width: 80px;
+        }
+
+        #sendButton:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        #sendButton:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .loading-dots {
+            display: inline-flex;
+            gap: 2px;
+        }
+
+        .loading-dot {
+            width: 6px;
+            height: 6px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: loading-bounce 1.4s ease-in-out infinite both;
+        }
+
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes loading-bounce {
+            0%, 80%, 100% {
+                transform: scale(0);
+            }
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        .error-message {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+
+        .welcome-message {
+            text-align: center;
+            color: #666;
+            padding: 40px 20px;
+            font-style: italic;
+        }
+
+
+
+        /* Responsive design */
+        @media (max-width: 600px) {
+            .chat-container {
+                height: 100vh;
+                border-radius: 0;
+            }
+
+            .message-bubble {
+                max-width: 85%;
+            }
+
+            .config-panel {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .config-group {
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>🧥 Rubby Leather Assitant Bot</h1>
+            <p>To Assist the Customer for shopping Jackets and other Accessories</p>
+        </div>
+        
+
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="welcome-message">
+                👋 Welcome! I'm here to help answer your questions about shopping on 
+                Rubby Leather website. feel free to ask any question about Rubby Leather.
+            </div>
+        </div>
+        
+        <div class="chat-input-container">
+            <div class="input-group">
+                <div class="input-wrapper">
+                    <textarea 
+                        id="queryInput" 
+                        placeholder="Ask me about Rubby Leather's..." 
+                        rows="1"
+                    ></textarea>
+                </div>
+                <button id="sendButton" onclick="sendQuery()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const queryInput = document.getElementById('queryInput');
+        const sendButton = document.getElementById('sendButton');
+        
+        // Configuration - hardcoded values
+        const API_CONFIG = {
+            url: 'http://127.0.0.1:8000/ask',
+            knowledgebase: 'RubbyLeatherChatBot',
+            assistantId: '2'
+        };
+
+        // Auto-resize textarea
+        queryInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+
+        // Send message on Enter (but allow Shift+Enter for new lines)
+        queryInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendQuery();
+            }
+        });
+
+        function formatResponse(text) {
+            if (!text) return text;
+            
+            // Split the text into lines for processing
+            let lines = text.split('\n');
+            let formattedLines = [];
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) {
+                    formattedLines.push('');
+                    continue;
+                }
+                
+                // Check if line contains bullet-like patterns
+                if (line.match(/^[-•*]\s/) || line.match(/^\d+\.\s/)) {
+                    // Already formatted as a list item
+                    formattedLines.push(`<li>${line.replace(/^[-•*]\s/, '').replace(/^\d+\.\s/, '')}</li>`);
+                } else if (line.includes('- ')) {
+                    // Contains inline bullets, split and format
+                    const parts = line.split('- ');
+                    const intro = parts[0].trim();
+                    if (intro) {
+                        formattedLines.push(`<p><strong>${intro}</strong></p>`);
+                    }
+                    formattedLines.push('<ul>');
+                    for (let i = 1; i < parts.length; i++) {
+                        if (parts[i].trim()) {
+                            formattedLines.push(`<li>${parts[i].trim()}</li>`);
+                        }
+                    }
+                    formattedLines.push('</ul>');
+                } else {
+                    // Regular paragraph
+                    formattedLines.push(`<p>${line}</p>`);
+                }
+            }
+            
+            // Post-process to group consecutive list items
+            let result = [];
+            let inList = false;
+            
+            for (let line of formattedLines) {
+                if (line.startsWith('<li>')) {
+                    if (!inList) {
+                        result.push('<ul>');
+                        inList = true;
+                    }
+                    result.push(line);
+                } else {
+                    if (inList) {
+                        result.push('</ul>');
+                        inList = false;
+                    }
+                    result.push(line);
+                }
+            }
+            
+            if (inList) {
+                result.push('</ul>');
+            }
+            
+            return result.join('');
+        }
+
+        function getCurrentTime() {
+            return new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+
+        function addMessage(content, isUser = false, isError = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            
+            if (isError) {
+                messageDiv.innerHTML = `
+                    <div class="error-message">
+                        ${content}
+                    </div>
+                    <div class="message-time">${getCurrentTime()}</div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="message-bubble">
+                        ${content}
+                    </div>
+                    <div class="message-time">${getCurrentTime()}</div>
+                `;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Remove welcome message if it exists
+            const welcomeMsg = chatMessages.querySelector('.welcome-message');
+            if (welcomeMsg) {
+                welcomeMsg.remove();
+            }
+        }
+
+        function addLoadingMessage() {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message bot';
+            loadingDiv.id = 'loadingMessage';
+            loadingDiv.innerHTML = `
+                <div class="message-bubble loading">
+                    Thinking
+                    <div class="loading-dots">
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(loadingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return loadingDiv;
+        }
+
+        function removeLoadingMessage() {
+            const loadingMsg = document.getElementById('loadingMessage');
+            if (loadingMsg) {
+                loadingMsg.remove();
+            }
+        }
+
+        async function sendQuery() {
+            const query = queryInput.value.trim();
+            if (!query) return;
+
+            // Disable input and button
+            queryInput.disabled = true;
+            sendButton.disabled = true;
+
+            // Add user message
+            addMessage(query, true);
+            
+            // Clear input
+            queryInput.value = '';
+            queryInput.style.height = 'auto';
+
+            // Add loading message
+            const loadingMsg = addLoadingMessage();
+
+            try {
+                // Make API call with JSON
+                const response = await fetch("/ask", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        query: query
+                    })
+                });
+
+                removeLoadingMessage();
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Extract bot response
+                const botResponse = data.response || data.answer || data.message || "No response.";
+                const formattedResponse = formatResponse(botResponse);
+                addMessage(formattedResponse);
+
+            } catch (error) {
+                removeLoadingMessage();
+                console.error('Error:', error);
+                let errorMessage = `Sorry, I encountered an error: ${error.message}.`;
+                if (error.message.includes('fetch')) {
+                    errorMessage += ' Please make sure your API server is running and accessible.';
+                }
+                addMessage(errorMessage, false, true);
+            } finally {
+                // Re-enable input and button
+                queryInput.disabled = false;
+                sendButton.disabled = false;
+                queryInput.focus();
+            }
+        }
+
+        // Focus on input when page loads
+        window.onload = function() {
+            queryInput.focus();
+        };
+
+        // Test API connection function (optional)
+        async function testConnection() {
+            try {
+                const response = await fetch(apiUrl.value.trim(), {
+                    method: 'POST',
+                    headers: {
+                        'accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        'knowledgebase_name': knowledgebase.value.trim(),
+                        'query': 'test connection',
+                        'assistant_id': assistantId.value.trim()
+                    })
+                });
+                
+                if (response.ok) {
+                    console.log('API connection successful');
+                } else {
+                    console.warn('API connection failed:', response.status);
+                }
+            } catch (error) {
+                console.error('API connection test failed:', error);
+            }
+        }
+    </script>
+</body>
+</html>
