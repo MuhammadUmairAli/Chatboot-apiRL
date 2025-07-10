@@ -5,12 +5,18 @@ from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import RetrievalQA
 from dotenv import load_dotenv
+from os
 
+# Get the key from environment variable
+api_key = os.getenv("OPENAI_API_KEY")
+
+if not api_key:
+    raise ValueError("OPENAI_API_KEY is not set in environment.")
 # Load .env file if using it
 load_dotenv()
 
 # Set API key manually (or rely on .env if set there)
-os.environ["OPENAI_API_KEY"] = "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"  # Replace with your real key
+os.environ["OPENAI_API_KEY"] = "OPENAI_API_KEY"  # Replace with your real key
 
 # Load & split document
 # print("Starting to load document...")  # Debug
